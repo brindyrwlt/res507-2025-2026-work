@@ -1,8 +1,8 @@
-import test from 'node:test'
+import { test } from 'node:test'
 import assert from 'node:assert'
 import { buildApp } from '../app.js'
 
-test('GET /health responds with ok equals to true', async () => {
+test('GET /health responds with ok equals to true', async t => {
   const app = buildApp()
 
   const response = await app.inject({
@@ -10,8 +10,8 @@ test('GET /health responds with ok equals to true', async () => {
     url: '/'
   })
 
-  assert.strictEqual(response.statusCode, 200)
-  assert.strictEqual(response.json.ok, true)
+  t.assert.strictEqual(response.statusCode, 200)
+  t.assert.strictEqual(response.json.ok, true)
 })
 
 test('GET unknown path', async () => {
