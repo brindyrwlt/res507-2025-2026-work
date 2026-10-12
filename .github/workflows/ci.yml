@@ -66,13 +66,9 @@ jobs:
   
       - name: Verify seeded quote GET
         run: |
-          for attempt in $(seq 1 30); do
-            if curl --fail --silent --show-error \
-              --connect-timeout 2 --max-time 5 \
-              http://localhost:3000/ -o /tmp/root.html
-              
-              break
-            fi
+          curl --fail --silent --show-error \
+            --connect-timeout 2 --max-time 5 \
+            http://localhost:3000/ -o /tmp/root.html
           
           # Extract the quote text from the rendered page
           QUOTE_TEXT=$(node -e '
@@ -117,13 +113,9 @@ jobs:
         run: |
           NEW_QUOTE="CI integration test quote – $(date -u +%Y%m%dT%H%M%SZ)"
           # Re-fetch the page
-          for attempt in $(seq 1 30); do
-            if curl --fail --silent --show-error \
-              --connect-timeout 2 --max-time 5 \
-              http://localhost:3000/ -o /tmp/root-after.html
-            
-              break
-            fi
+          curl --fail --silent --show-error \
+            --connect-timeout 2 --max-time 5 \
+            http://localhost:3000/ -o /tmp/root-after.html
 
           # The new quote should now be rendered (or at least present in the response)
           node -e '
@@ -138,6 +130,8 @@ jobs:
               console.log("✓ New quote is present in the rendered page.");
           ' "$NEW_QUOTE"
 
+      
+      
       - name: Show container diagnostics
         if: failure()
         run: |
