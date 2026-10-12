@@ -2,25 +2,35 @@ import { test } from 'node:test'
 import assert from 'node:assert'
 import { buildApp } from '../app.js'
 
-test('GET /health responds with ok equals to true', async t => {
-  const app = buildApp()
 
-  const response = await app.inject({
-    method: 'GET',
-    url: '/'
-  })
+test('GET tests', async (t) => {
+  let app;
 
-  t.assert.strictEqual(response.statusCode, 200)
-  t.assert.strictEqual(response.json.ok, true)
-})
+  try {
+    app = await buildApp();
 
-test('GET unknown path', async () => {
-  const app = buildApp()
+    await t.test('GET health returns 200', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/health'
+      });
 
-  const response = await app.inject({
-    method: 'GET',
-    url: '/unknown'
-  })
+      assert.strictEqual(response.statusCode, 200);
+      assert.deepStrictEqual(response.json(), { ok: true });
+    });
 
-  assert.strictEqual(response.statusCode, 404)
-})
+    await t.test('Unknown path 404', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/unknown'
+      });
+
+      assert.strictEqual(response.statusCode, 404);
+    });
+
+  } finally {
+    if (app) {
+      await app.close();
+    }
+  }
+});
