@@ -39,6 +39,11 @@ jobs:
           node --check app.js
           node --check server.js
 
+      - name: Unit tests
+        working-directory: labs/20-containerized-node-app/app
+        run: |
+          node --test
+
       - name: Build Docker image
         working-directory: labs/20-containerized-node-app
         run: docker build -t quote-app -f docker/Dockerfile .
@@ -59,72 +64,73 @@ jobs:
           echo "Health check failed"
           exit 1
   
-      - name: Verify seeded quote GET
-        run: |
-          curl --fail --silent --show-error \
-            --connect-timeout 2 --max-time 5 \
-            http://localhost:3000/ -o /tmp/root.html
+      # - name: Verify seeded quote GET
+      #   run: |
+      #     curl --fail --silent --show-error \
+      #       --connect-timeout 2 --max-time 5 \
+      #       http://localhost:3000/ -o /tmp/root.html
   
-          # Extract the quote text from the rendered page
-          QUOTE_TEXT=$(node -e '
-            const fs = require("node:fs");
-            const html = fs.readFileSync("/tmp/root.html", "utf8");
-            // Adjust selector to match your app markup (e.g., <p id="quote">…</p>)
-            const match = html.match(/<p[^>]*id=["\x27]quote["\x27][^>]*>([^<]+)<\/p>/);
-            if (!match) { console.error("No quote element found in HTML"); process.exit(1); }
-            process.stdout.write(match[1].trim());
-          ')
+      #     # Extract the quote text from the rendered page
+      #     QUOTE_TEXT=$(node -e '
+      #       const fs = require("node:fs");
+      #       const html = fs.readFileSync("/tmp/root.html", "utf8");
+      #       // Adjust selector to match your app markup (e.g., <p id="quote">…</p>)
+      #       const match = html.match(/<p[^>]*id=["\x27]quote["\x27][^>]*>([^<]+)<\/p>/);
+      #       if (!match) { console.error("No quote element found in HTML"); process.exit(1); }
+      #       process.stdout.write(match[1].trim());
+      #     ')
   
-          # Assert it is non-empty (a seeded quote must be present)
-          node -e '
-            const assert = require("node:assert/strict");
-            const text = process.argv[1];
-            assert.ok(text.length > 0, "Seeded quote text is empty");
-            console.log("✓ Seeded quote rendered:", JSON.stringify(text));
-          ' "$QUOTE_TEXT"
+      #     # Assert it is non-empty (a seeded quote must be present)
+      #     node -e '
+      #       const assert = require("node:assert/strict");
+      #       const text = process.argv[1];
+      #       assert.ok(text.length > 0, "Seeded quote text is empty");
+      #       console.log("✓ Seeded quote rendered:", JSON.stringify(text));
+      #     ' "$QUOTE_TEXT"
       
-      - name: Submit a distinct quote via POST
-        run: |
-          NEW_QUOTE="CI integration test quote – $(date -u +%Y%m%dT%H%M%SZ)"
+      # - name: Submit a distinct quote via POST
+      #   run: |
+      #     NEW_QUOTE="CI integration test quote – $(date -u +%Y%m%dT%H%M%SZ)"
 
-          HTTP_CODE=$(curl --silent --show-error \
-            --connect-timeout 2 --max-time 5 \
-            -o /tmp/post-response.json \
-            -w "%{http_code}" \
-            -X POST \
-            -H "Content-Type: application/json" \
-            -d "{\"text\": \"$NEW_QUOTE\"}" \
-            http://localhost:3000/quotes)
+      #     HTTP_CODE=$(curl --silent --show-error \
+      #       --connect-timeout 2 --max-time 5 \
+      #       -o /tmp/post-response.json \
+      #       -w "%{http_code}" \
+      #       -X POST \
+      #       -H "Content-Type: application/json" \
+      #       -d "{\"text\": \"$NEW_QUOTE\"}" \
+      #       http://localhost:3000/quotes)
 
-            node -e '
-              const assert = require("node:assert/strict");
-              assert.equal(process.argv[1], "201", "Expected 201, got " + process.argv[1]);
-              console.log("✓ POST /quotes returned 201.");
-            ' "$HTTP_CODE"
+      #       node -e '
+      #         const assert = require("node:assert/strict");
+      #         assert.equal(process.argv[1], "201", "Expected 201, got " + process.argv[1]);
+      #         console.log("✓ POST /quotes returned 201.");
+      #       ' "$HTTP_CODE"
 
-            echo "Submitted quote: $NEW_QUOTE"
+      #       echo "Submitted quote: $NEW_QUOTE"
 
-      - name: Verify new quote appears GET
-        run: |
-          NEW_QUOTE="CI integration test quote – $(date -u +%Y%m%dT%H%M%SZ)"
-          # Re-fetch the page
-          curl --fail --silent --show-error \
-            --connect-timeout 2 --max-time 5 \
-            http://localhost:3000/ -o /tmp/root-after.html
+      # - name: Verify new quote appears GET
+      #   run: |
+      #     NEW_QUOTE="CI integration test quote – $(date -u +%Y%m%dT%H%M%SZ)"
+      #     # Re-fetch the page
+      #     curl --fail --silent --show-error \
+      #       --connect-timeout 2 --max-time 5 \
+      #       http://localhost:3000/ -o /tmp/root-after.html
 
-          # The new quote should now be rendered (or at least present in the response)
-          node -e '
-              const fs = require("node:fs");
-              const assert = require("node:assert/strict");
-              const html = fs.readFileSync("/tmp/root-after.html", "utf8");
-              const expected = process.argv[1];
-              assert.ok(
-                html.includes(expected),
-                "New quote not found in rendered page. Expected to find: " + expected
-              );
-              console.log("✓ New quote is present in the rendered page.");
-          ' "$NEW_QUOTE"
+      #     # The new quote should now be rendered (or at least present in the response)
+      #     node -e '
+      #         const fs = require("node:fs");
+      #         const assert = require("node:assert/strict");
+      #         const html = fs.readFileSync("/tmp/root-after.html", "utf8");
+      #         const expected = process.argv[1];
+      #         assert.ok(
+      #           html.includes(expected),
+      #           "New quote not found in rendered page. Expected to find: " + expected
+      #         );
+      #         console.log("✓ New quote is present in the rendered page.");
+      #     ' "$NEW_QUOTE"
 
+      
       
       - name: Show container diagnostics
         if: failure()
