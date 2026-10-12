@@ -26,7 +26,7 @@ jobs:
         run: |
           sudo systemctl start postgresql.service
           sudo -u postgres psql < labs/20-containerized-node-app/db/init.sql
-          sudo -u postgres psql < "CREATE USER quotes WITH PASSWORD quotes; GRANT ALL PRIVILEGES ON DATABASE quotes TO quotes"
+          sudo -u postgres psql "CREATE USER quotes WITH PASSWORD quotes; GRANT ALL PRIVILEGES ON DATABASE quotes TO quotes"
           pg_isready
 
       - name: Install dependencies
