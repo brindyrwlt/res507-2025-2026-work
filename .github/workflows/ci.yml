@@ -59,7 +59,7 @@ jobs:
           echo "Health check failed"
           exit 1
 
-      - name: Verify seeded quote on GET /
+      - name: Verify seeded quote GET
         run: |
           curl --fail --silent --show-error \
             --connect-timeout 2 --max-time 5 \
@@ -83,7 +83,7 @@ jobs:
             console.log("✓ Seeded quote rendered:", JSON.stringify(text));
           ' "$QUOTE_TEXT"
       
-        - name: Submit a distinct quote via POST /quotes
+        - name: Submit a distinct quote via POST
           run: |
             NEW_QUOTE="CI integration test quote – $(date -u +%Y%m%dT%H%M%SZ)"
 
@@ -104,7 +104,7 @@ jobs:
 
               echo "Submitted quote: $NEW_QUOTE"
 
-        - name: Verify new quote appears on subsequent GET /
+        - name: Verify new quote appears GET
           run: |
             NEW_QUOTE="CI integration test quote – $(date -u +%Y%m%dT%H%M%SZ)"
             # Re-fetch the page
