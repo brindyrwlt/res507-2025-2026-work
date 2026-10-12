@@ -11,6 +11,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      DATABASE_URL: "postgres://quotes@localhost/quotes"
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -19,6 +21,13 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "24"
+
+      - name: Start PostgreSQL
+        run: |
+          sudo systemctl start postgresql.service
+          sudo -u postgres bash -c "psql < labs/20-containerized-node-app/db/init.sql"
+          sudo -u postgres bash -c "psql < 'CREATE USER quotes WITH PASSWORD \"quotes\"; GRANT ALL PRIVILEGES ON DATABASE quotes TO quotes''"
+          pg_isready
 
       - name: Install dependencies
         working-directory: labs/20-containerized-node-app/app
