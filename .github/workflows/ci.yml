@@ -42,7 +42,7 @@ jobs:
       - name: Unit tests
         working-directory: labs/20-containerized-node-app/app
         run: |
-          node --test
+          node --test tests/tests.js
 
       - name: Build Docker image
         working-directory: labs/20-containerized-node-app
